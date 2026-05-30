@@ -8,7 +8,7 @@ import { SessionHistory } from './components/SessionHistory';
 type Tab = 'play' | 'stats' | 'history';
 
 export default function App() {
-  const { sessions, activeSession, startSession, endSession, addHand, deleteHand, deleteSession } = useSessions();
+  const { sessions, activeSession, startSession, endSession, addHand, deleteHand, deleteSession, updateStartTime } = useSessions();
   const [showStart, setShowStart] = useState(false);
   const [tab, setTab] = useState<Tab>('play');
 
@@ -68,6 +68,7 @@ export default function App() {
                 onAddHand={(amount, note, history) => addHand(activeSession.id, amount, note, history)}
                 onDeleteHand={handId => deleteHand(activeSession.id, handId)}
                 onEnd={() => endSession(activeSession.id)}
+                onUpdateStartTime={t => updateStartTime(activeSession.id, t)}
               />
             ) : (
               <div className="flex flex-col items-center justify-center py-20 gap-4">

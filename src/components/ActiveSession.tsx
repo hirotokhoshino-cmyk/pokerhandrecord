@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { format, differenceInMinutes } from 'date-fns';
+import { format, differenceInMinutes, parse } from 'date-fns';
 import type { Session, HandHistory } from '../types';
 import { HandInput } from './HandInput';
 import { HandHistoryView } from './HandHistoryView';
@@ -9,6 +9,7 @@ interface Props {
   onAddHand: (amount: number, note?: string, history?: HandHistory) => void;
   onDeleteHand: (handId: string) => void;
   onEnd: () => void;
+  onUpdateStartTime: (iso: string) => void;
 }
 
 function fmt(n: number) {
@@ -20,8 +21,10 @@ function fmtColor(n: number) {
   return n >= 0 ? 'text-emerald-400' : 'text-red-400';
 }
 
-export function ActiveSession({ session, onAddHand, onDeleteHand, onEnd }: Props) {
+export function ActiveSession({ session, onAddHand, onDeleteHand, onEnd, onUpdateStartTime }: Props) {
   const [now, setNow] = useState(new Date());
+  const [editingTime, setEditingTime] = useState(false);
+  const [timeInput, setTimeInput] = useState(format(new Date(session.startTime), 'HH:mm'));
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -37,6 +40,17 @@ export function ActiveSession({ session, onAddHand, onDeleteHand, onEnd }: Props
   const stack = session.buyIn + total;
   const hourlyRate = elapsed > 0 ? (total / elapsed) * 60 : 0;
 
+  const saveStartTime = () => {
+    try {
+      const base = format(new Date(session.startTime), 'yyyy-MM-dd');
+      const parsed = parse(`${base} ${timeInput}`, 'yyyy-MM-dd HH:mm', new Date());
+      if (!isNaN(parsed.getTime())) {
+        onUpdateStartTime(parsed.toISOString());
+      }
+    } catch {}
+    setEditingTime(false);
+  };
+
   return (
     <div className="flex flex-col gap-4">
       {/* Stats bar */}
@@ -48,11 +62,35 @@ export function ActiveSession({ session, onAddHand, onDeleteHand, onEnd }: Props
       </div>
 
       {/* Session info */}
-      <div className="bg-slate-800 rounded-xl px-4 py-3 flex gap-4 text-sm text-slate-400 flex-wrap">
+      <div className="bg-slate-800 rounded-xl px-4 py-3 flex flex-wrap gap-3 items-center text-sm text-slate-400">
         <span className="font-mono text-emerald-400 font-semibold">{session.stake}</span>
         {session.location && <span>{session.location}</span>}
-        <span>開始: {format(new Date(session.startTime), 'HH:mm')}</span>
         <span>バイイン: ${session.buyIn.toLocaleString()}</span>
+
+        {/* Editable start time */}
+        <div className="flex items-center gap-1.5 ml-auto">
+          <span className="text-xs text-slate-500">開始:</span>
+          {editingTime ? (
+            <>
+              <input
+                type="time"
+                value={timeInput}
+                onChange={e => setTimeInput(e.target.value)}
+                className="bg-slate-700 border border-emerald-500 rounded px-1.5 py-0.5 text-xs text-white font-mono focus:outline-none"
+                autoFocus
+              />
+              <button onClick={saveStartTime} className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold">保存</button>
+              <button onClick={() => setEditingTime(false)} className="text-xs text-slate-500 hover:text-slate-300">✕</button>
+            </>
+          ) : (
+            <button
+              onClick={() => { setTimeInput(format(new Date(session.startTime), 'HH:mm')); setEditingTime(true); }}
+              className="font-mono text-slate-300 hover:text-emerald-400 underline decoration-dotted transition-colors text-xs"
+            >
+              {format(new Date(session.startTime), 'HH:mm')}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Hand input */}
@@ -69,11 +107,11 @@ export function ActiveSession({ session, onAddHand, onDeleteHand, onEnd }: Props
             {[...session.hands].reverse().map(hand => (
               <div key={hand.id} className="border-b border-slate-700 last:border-0 pb-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
                     <span className="text-xs text-slate-500 font-mono shrink-0">
                       {format(new Date(hand.timestamp), 'HH:mm')}
                     </span>
-                    <span className={`font-mono font-semibold ${fmtColor(hand.amount)}`}>
+                    <span className={`font-mono font-semibold text-sm ${fmtColor(hand.amount)}`}>
                       {fmt(hand.amount)}
                     </span>
                     {hand.history?.heroPosition && (
@@ -87,7 +125,7 @@ export function ActiveSession({ session, onAddHand, onDeleteHand, onEnd }: Props
                   </div>
                   <button
                     onClick={() => onDeleteHand(hand.id)}
-                    className="text-slate-600 hover:text-red-400 text-xs ml-2 shrink-0"
+                    className="text-slate-600 hover:text-red-400 text-xs ml-2 shrink-0 transition-colors"
                   >
                     ✕
                   </button>

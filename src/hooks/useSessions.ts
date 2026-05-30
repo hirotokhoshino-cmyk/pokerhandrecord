@@ -59,6 +59,12 @@ export function useSessions() {
     persist(sessions.filter(s => s.id !== sessionId));
   }, [sessions, persist]);
 
+  const updateStartTime = useCallback((sessionId: string, newStartTime: string) => {
+    persist(sessions.map(s =>
+      s.id === sessionId ? { ...s, startTime: newStartTime } : s
+    ));
+  }, [sessions, persist]);
+
   const activeSession = sessions.find(s => !s.endTime) ?? null;
 
   return {
@@ -69,5 +75,6 @@ export function useSessions() {
     addHand,
     deleteHand,
     deleteSession,
+    updateStartTime,
   };
 }
