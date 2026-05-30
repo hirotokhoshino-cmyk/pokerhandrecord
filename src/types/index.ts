@@ -1,37 +1,41 @@
+export type ActionType = 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin';
+
 export interface StreetAction {
-  action: string; // free text per street
+  position: string;
+  action: ActionType;
+  amountBB?: number;
 }
 
 export interface HandHistory {
   heroPosition: string;
-  heroCards: string;        // e.g. "Ah Ks"
-  preflopAction: string;
-  flopCards?: string;       // e.g. "As 7h 2c"
-  flopAction?: string;
+  heroCards: string;           // 'Ah Ks'
+  bbSize: number;              // $ per 1BB
+  effectiveStack: number;      // BB
+  preflopActions: StreetAction[];
+  flopCards?: string;
+  flopActions?: StreetAction[];
   turnCard?: string;
-  turnAction?: string;
+  turnActions?: StreetAction[];
   riverCard?: string;
-  riverAction?: string;
-  potSize?: number;
-  villains?: string;        // brief villain description
-  result?: string;          // e.g. "showdown win", "bluff success"
+  riverActions?: StreetAction[];
+  result?: string;
 }
 
 export interface HandEntry {
   id: string;
   sessionId: string;
-  timestamp: string; // ISO
-  amount: number;    // positive = win, negative = loss
+  timestamp: string;
+  amount: number;
   note?: string;
   history?: HandHistory;
 }
 
 export interface Session {
   id: string;
-  date: string;          // YYYY-MM-DD
-  startTime: string;     // ISO
-  endTime?: string;      // ISO
-  stake: string;         // e.g. "1/2", "2/5"
+  date: string;
+  startTime: string;
+  endTime?: string;
+  stake: string;
   location?: string;
   buyIn: number;
   hands: HandEntry[];
