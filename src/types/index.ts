@@ -8,9 +8,9 @@ export interface StreetAction {
 
 export interface HandHistory {
   heroPosition: string;
-  heroCards: string;           // 'Ah Ks'
-  bbSize: number;              // $ per 1BB
-  effectiveStack: number;      // BB
+  heroCards: string;
+  bbSize: number;
+  effectiveStack: number; // BB
   preflopActions: StreetAction[];
   flopCards?: string;
   flopActions?: StreetAction[];
@@ -38,5 +38,6 @@ export interface Session {
   stake: string;
   location?: string;
   buyIn: number;
+  currentStack: number; // tracks running stack in $
   hands: HandEntry[];
 }

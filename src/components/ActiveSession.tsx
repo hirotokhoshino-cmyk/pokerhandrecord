@@ -12,53 +12,52 @@ interface Props {
   onUpdateStartTime: (iso: string) => void;
 }
 
-function fmt(n: number) {
-  const sign = n >= 0 ? '+' : '';
-  return `${sign}$${n.toLocaleString()}`;
-}
+function fmt(n: number) { return `${n >= 0 ? '+' : ''}$${n.toLocaleString()}`; }
+function fmtColor(n: number) { return n >= 0 ? 'text-emerald-400' : 'text-red-400'; }
 
-function fmtColor(n: number) {
-  return n >= 0 ? 'text-emerald-400' : 'text-red-400';
+// parse stake string to extract BB size (e.g. "2/5" → 5, "1/2" → 2)
+function bbFromStake(stake: string): number {
+  const parts = stake.split('/');
+  const last = parseFloat(parts[parts.length - 1]);
+  return isNaN(last) ? 5 : last;
 }
 
 export function ActiveSession({ session, onAddHand, onDeleteHand, onEnd, onUpdateStartTime }: Props) {
-  const [now, setNow] = useState(new Date());
+  const [now,         setNow]         = useState(new Date());
   const [editingTime, setEditingTime] = useState(false);
-  const [timeInput, setTimeInput] = useState(format(new Date(session.startTime), 'HH:mm'));
+  const [timeInput,   setTimeInput]   = useState(format(new Date(session.startTime), 'HH:mm'));
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  const elapsed = differenceInMinutes(now, new Date(session.startTime));
-  const hours = Math.floor(elapsed / 60);
-  const mins = elapsed % 60;
+  const elapsed = Math.max(0, differenceInMinutes(now, new Date(session.startTime)));
+  const hours   = Math.floor(elapsed / 60);
+  const mins    = elapsed % 60;
   const elapsedLabel = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 
-  const total = session.hands.reduce((s, h) => s + h.amount, 0);
-  const stack = session.buyIn + total;
+  const total      = session.hands.reduce((s, h) => s + h.amount, 0);
   const hourlyRate = elapsed > 0 ? (total / elapsed) * 60 : 0;
+  const defaultBB  = bbFromStake(session.stake);
 
   const saveStartTime = () => {
     try {
-      const base = format(new Date(session.startTime), 'yyyy-MM-dd');
+      const base   = format(new Date(session.startTime), 'yyyy-MM-dd');
       const parsed = parse(`${base} ${timeInput}`, 'yyyy-MM-dd HH:mm', new Date());
-      if (!isNaN(parsed.getTime())) {
-        onUpdateStartTime(parsed.toISOString());
-      }
+      if (!isNaN(parsed.getTime())) onUpdateStartTime(parsed.toISOString());
     } catch {}
     setEditingTime(false);
   };
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Stats bar */}
+      {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
-        <StatCard label="収支" value={fmt(total)} color={fmtColor(total)} />
-        <StatCard label="スタック" value={`$${stack.toLocaleString()}`} color="text-white" />
-        <StatCard label="経過時間" value={elapsedLabel} color="text-slate-300" />
-        <StatCard label="時給" value={fmt(Math.round(hourlyRate)) + '/h'} color={fmtColor(hourlyRate)} />
+        <StatCard label="収支"   value={fmt(total)}                   color={fmtColor(total)} />
+        <StatCard label="スタック" value={`$${session.currentStack.toLocaleString()}`} color="text-white" />
+        <StatCard label="経過時間" value={elapsedLabel}               color="text-slate-300" />
+        <StatCard label="時給"   value={`${fmt(Math.round(hourlyRate))}/h`} color={fmtColor(hourlyRate)} />
       </div>
 
       {/* Session info */}
@@ -72,21 +71,15 @@ export function ActiveSession({ session, onAddHand, onDeleteHand, onEnd, onUpdat
           <span className="text-xs text-slate-500">開始:</span>
           {editingTime ? (
             <>
-              <input
-                type="time"
-                value={timeInput}
-                onChange={e => setTimeInput(e.target.value)}
+              <input type="time" value={timeInput} onChange={e => setTimeInput(e.target.value)}
                 className="bg-slate-700 border border-emerald-500 rounded px-1.5 py-0.5 text-xs text-white font-mono focus:outline-none"
-                autoFocus
-              />
-              <button onClick={saveStartTime} className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold">保存</button>
-              <button onClick={() => setEditingTime(false)} className="text-xs text-slate-500 hover:text-slate-300">✕</button>
+                autoFocus />
+              <button onClick={saveStartTime} className="text-xs text-emerald-400 font-semibold">保存</button>
+              <button onClick={() => setEditingTime(false)} className="text-xs text-slate-500">✕</button>
             </>
           ) : (
-            <button
-              onClick={() => { setTimeInput(format(new Date(session.startTime), 'HH:mm')); setEditingTime(true); }}
-              className="font-mono text-slate-300 hover:text-emerald-400 underline decoration-dotted transition-colors text-xs"
-            >
+            <button onClick={() => { setTimeInput(format(new Date(session.startTime), 'HH:mm')); setEditingTime(true); }}
+              className="font-mono text-slate-300 hover:text-emerald-400 underline decoration-dotted text-xs transition-colors">
               {format(new Date(session.startTime), 'HH:mm')}
             </button>
           )}
@@ -96,7 +89,11 @@ export function ActiveSession({ session, onAddHand, onDeleteHand, onEnd, onUpdat
       {/* Hand input */}
       <div className="bg-slate-800 rounded-xl p-4">
         <p className="text-sm text-slate-400 mb-3">ハンド結果を入力</p>
-        <HandInput onAdd={onAddHand} />
+        <HandInput
+          onAdd={onAddHand}
+          currentStack={session.currentStack}
+          defaultBbSize={defaultBB}
+        />
       </div>
 
       {/* Hand list */}
@@ -119,16 +116,13 @@ export function ActiveSession({ session, onAddHand, onDeleteHand, onEnd, onUpdat
                         {hand.history.heroPosition}
                       </span>
                     )}
-                    {hand.note && (
-                      <span className="text-xs text-slate-400 truncate">{hand.note}</span>
+                    {hand.history?.heroCards && (
+                      <span className="text-xs font-mono text-slate-300">{hand.history.heroCards}</span>
                     )}
+                    {hand.note && <span className="text-xs text-slate-400 truncate">{hand.note}</span>}
                   </div>
-                  <button
-                    onClick={() => onDeleteHand(hand.id)}
-                    className="text-slate-600 hover:text-red-400 text-xs ml-2 shrink-0 transition-colors"
-                  >
-                    ✕
-                  </button>
+                  <button onClick={() => onDeleteHand(hand.id)}
+                    className="text-slate-600 hover:text-red-400 text-xs ml-2 shrink-0 transition-colors">✕</button>
                 </div>
                 {hand.history && <HandHistoryView history={hand.history} />}
               </div>
@@ -137,11 +131,9 @@ export function ActiveSession({ session, onAddHand, onDeleteHand, onEnd, onUpdat
         </div>
       )}
 
-      {/* End session */}
-      <button
-        onClick={onEnd}
-        className="w-full py-3 bg-slate-700 hover:bg-red-900 border border-slate-600 hover:border-red-700 text-slate-300 hover:text-red-300 font-semibold rounded-xl transition-colors"
-      >
+      {/* End */}
+      <button onClick={onEnd}
+        className="w-full py-3 bg-slate-700 hover:bg-red-900 border border-slate-600 hover:border-red-700 text-slate-300 hover:text-red-300 font-semibold rounded-xl transition-colors">
         セッション終了
       </button>
     </div>

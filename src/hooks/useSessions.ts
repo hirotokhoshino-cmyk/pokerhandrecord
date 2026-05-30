@@ -12,15 +12,16 @@ export function useSessions() {
     saveSessions(updated);
   }, []);
 
-  const startSession = useCallback((stake: string, buyIn: number, location?: string) => {
-    const now = new Date().toISOString();
+  const startSession = useCallback((stake: string, buyIn: number, location?: string, startTime?: string) => {
+    const now = startTime ?? new Date().toISOString();
     const session: Session = {
       id: uuid(),
-      date: format(new Date(), 'yyyy-MM-dd'),
+      date: format(new Date(now), 'yyyy-MM-dd'),
       startTime: now,
       stake,
       location,
       buyIn,
+      currentStack: buyIn,
       hands: [],
     };
     persist([...sessions, session]);
@@ -43,16 +44,23 @@ export function useSessions() {
       history,
     };
     persist(sessions.map(s =>
-      s.id === sessionId ? { ...s, hands: [...s.hands, hand] } : s
+      s.id === sessionId
+        ? { ...s, hands: [...s.hands, hand], currentStack: s.currentStack + amount }
+        : s
     ));
   }, [sessions, persist]);
 
   const deleteHand = useCallback((sessionId: string, handId: string) => {
-    persist(sessions.map(s =>
-      s.id === sessionId
-        ? { ...s, hands: s.hands.filter(h => h.id !== handId) }
-        : s
-    ));
+    persist(sessions.map(s => {
+      if (s.id !== sessionId) return s;
+      const hand = s.hands.find(h => h.id === handId);
+      const delta = hand ? hand.amount : 0;
+      return {
+        ...s,
+        hands: s.hands.filter(h => h.id !== handId),
+        currentStack: s.currentStack - delta,
+      };
+    }));
   }, [sessions, persist]);
 
   const deleteSession = useCallback((sessionId: string) => {

@@ -12,8 +12,8 @@ export default function App() {
   const [showStart, setShowStart] = useState(false);
   const [tab, setTab] = useState<Tab>('play');
 
-  const handleStart = (stake: string, buyIn: number, location?: string) => {
-    startSession(stake, buyIn, location);
+  const handleStart = (stake: string, buyIn: number, location?: string, startTime?: string) => {
+    startSession(stake, buyIn, location, startTime);
     setShowStart(false);
   };
 
