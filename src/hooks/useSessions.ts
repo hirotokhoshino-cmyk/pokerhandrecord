@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { v4 as uuid } from 'uuid';
 import { format } from 'date-fns';
 import { loadSessions, saveSessions } from '../store/storage';
-import type { Session, HandEntry } from '../types';
+import type { Session, HandEntry, HandHistory } from '../types';
 
 export function useSessions() {
   const [sessions, setSessions] = useState<Session[]>(loadSessions);
@@ -33,13 +33,14 @@ export function useSessions() {
     ));
   }, [sessions, persist]);
 
-  const addHand = useCallback((sessionId: string, amount: number, note?: string) => {
+  const addHand = useCallback((sessionId: string, amount: number, note?: string, history?: HandHistory) => {
     const hand: HandEntry = {
       id: uuid(),
       sessionId,
       timestamp: new Date().toISOString(),
       amount,
       note,
+      history,
     };
     persist(sessions.map(s =>
       s.id === sessionId ? { ...s, hands: [...s.hands, hand] } : s

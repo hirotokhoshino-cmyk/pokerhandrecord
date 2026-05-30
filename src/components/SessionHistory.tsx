@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { format, differenceInMinutes } from 'date-fns';
 import type { Session } from '../types';
 import { SessionChart } from './SessionChart';
+import { HandHistoryView } from './HandHistoryView';
 
 interface Props {
   sessions: Session[];
@@ -68,13 +69,19 @@ export function SessionHistory({ sessions, onDelete }: Props) {
                 <SessionChart session={s} />
 
                 {s.hands.length > 0 && (
-                  <div className="flex flex-col gap-1 max-h-48 overflow-y-auto">
+                  <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
                     <p className="text-xs text-slate-500 mb-1">ハンド一覧</p>
                     {[...s.hands].reverse().map(h => (
-                      <div key={h.id} className="flex gap-3 text-xs py-1 border-b border-slate-700 last:border-0">
-                        <span className="text-slate-500 font-mono shrink-0">{format(new Date(h.timestamp), 'HH:mm')}</span>
-                        <span className={`font-mono font-semibold ${h.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(h.amount)}</span>
-                        {h.note && <span className="text-slate-400 truncate">{h.note}</span>}
+                      <div key={h.id} className="border-b border-slate-700 last:border-0 pb-2">
+                        <div className="flex gap-3 text-xs py-1">
+                          <span className="text-slate-500 font-mono shrink-0">{format(new Date(h.timestamp), 'HH:mm')}</span>
+                          <span className={`font-mono font-semibold ${h.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(h.amount)}</span>
+                          {h.history?.heroPosition && (
+                            <span className="font-mono bg-slate-700 px-1.5 py-0.5 rounded text-emerald-400">{h.history.heroPosition}</span>
+                          )}
+                          {h.note && <span className="text-slate-400 truncate">{h.note}</span>}
+                        </div>
+                        {h.history && <HandHistoryView history={h.history} />}
                       </div>
                     ))}
                   </div>

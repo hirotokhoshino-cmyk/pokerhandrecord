@@ -65,7 +65,7 @@ export default function App() {
             {activeSession ? (
               <ActiveSession
                 session={activeSession}
-                onAddHand={(amount, note) => addHand(activeSession.id, amount, note)}
+                onAddHand={(amount, note, history) => addHand(activeSession.id, amount, note, history)}
                 onDeleteHand={handId => deleteHand(activeSession.id, handId)}
                 onEnd={() => endSession(activeSession.id)}
               />
