@@ -6,8 +6,8 @@ import type { SchoolUser, StudentScore } from '../types';
 interface Props {
   students: SchoolUser[];
   scores: StudentScore[];
-  onAddScore: (studentId: string, date: string, bustOuts: number, points: number, balance: number, notes?: string) => void;
-  onUpdateScore: (id: string, date: string, bustOuts: number, points: number, balance: number, notes?: string) => void;
+  onAddScore: (studentId: string, date: string, bustOuts: number, points: number, notes?: string) => void;
+  onUpdateScore: (id: string, date: string, bustOuts: number, points: number, notes?: string) => void;
   onDeleteScore: (id: string) => void;
   onAddStudent: (name: string, password: string) => void;
   onDeleteStudent: (id: string) => void;
@@ -128,8 +128,8 @@ export function TeacherView({ students, scores, onAddScore, onUpdateScore, onDel
             {showAddScore && (
               <ScoreForm
                 studentId={selectedStudent.id}
-                onSave={(date, bustOuts, points, balance, notes) => {
-                  onAddScore(selectedStudent.id, date, bustOuts, points, balance, notes);
+                onSave={(date, bustOuts, points, notes) => {
+                  onAddScore(selectedStudent.id, date, bustOuts, points, notes);
                   setShowAddScore(false);
                 }}
                 onCancel={() => setShowAddScore(false)}
@@ -145,8 +145,8 @@ export function TeacherView({ students, scores, onAddScore, onUpdateScore, onDel
                     key={s.id}
                     studentId={selectedStudent.id}
                     editTarget={s}
-                    onSave={(date, bustOuts, points, balance, notes) => {
-                      onUpdateScore(s.id, date, bustOuts, points, balance, notes);
+                    onSave={(date, bustOuts, points, notes) => {
+                      onUpdateScore(s.id, date, bustOuts, points, notes);
                       setEditScore(null);
                     }}
                     onCancel={() => setEditScore(null)}
@@ -168,12 +168,7 @@ export function TeacherView({ students, scores, onAddScore, onUpdateScore, onDel
                           {s.points > 0 ? '+' : ''}{s.points}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs text-slate-500">収支</p>
-                        <p className={`text-sm font-semibold ${(s.balance ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {(s.balance ?? 0) > 0 ? '+' : ''}{(s.balance ?? 0).toLocaleString()}円
-                        </p>
-                      </div>
+
                       <div className="flex gap-1">
                         <button onClick={() => setEditScore(s)} className="text-slate-500 hover:text-white text-xs px-1.5 py-1 rounded transition-colors">編集</button>
                         <button onClick={() => onDeleteScore(s.id)} className="text-slate-500 hover:text-red-400 text-xs px-1.5 py-1 rounded transition-colors">削除</button>

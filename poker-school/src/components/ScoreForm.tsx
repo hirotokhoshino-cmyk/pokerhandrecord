@@ -4,7 +4,7 @@ import type { StudentScore } from '../types';
 interface Props {
   studentId: string;
   editTarget?: StudentScore;
-  onSave: (date: string, bustOuts: number, points: number, balance: number, notes?: string) => void;
+  onSave: (date: string, bustOuts: number, points: number, notes?: string) => void;
   onCancel: () => void;
 }
 
@@ -13,12 +13,11 @@ export function ScoreForm({ editTarget, onSave, onCancel }: Props) {
   const [date, setDate] = useState(editTarget?.date ?? today);
   const [bustOuts, setBustOuts] = useState(String(editTarget?.bustOuts ?? 0));
   const [points, setPoints] = useState(String(editTarget?.points ?? 0));
-  const [balance, setBalance] = useState(String(editTarget?.balance ?? 0));
   const [notes, setNotes] = useState(editTarget?.notes ?? '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(date, Number(bustOuts), Number(points), Number(balance), notes || undefined);
+    onSave(date, Number(bustOuts), Number(points), notes || undefined);
   };
 
   return (
@@ -55,16 +54,7 @@ export function ScoreForm({ editTarget, onSave, onCancel }: Props) {
             required
           />
         </div>
-        <div className="flex flex-col gap-1 w-28">
-          <label className="text-xs text-slate-400">収支（円）</label>
-          <input
-            type="number"
-            value={balance}
-            onChange={e => setBalance(e.target.value)}
-            className="bg-[#0f1117] border border-slate-700 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none focus:border-emerald-500"
-            required
-          />
-        </div>
+
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-xs text-slate-400">メモ（任意）</label>

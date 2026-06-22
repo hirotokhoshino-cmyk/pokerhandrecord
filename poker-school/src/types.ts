@@ -13,6 +13,5 @@ export interface StudentScore {
   date: string; // YYYY-MM-DD
   bustOuts: number; // アウト数
   points: number; // 獲得ポイント
-  balance: number; // 収支（円）
   notes?: string;
 }
