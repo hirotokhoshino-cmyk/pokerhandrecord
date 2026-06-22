@@ -4,6 +4,13 @@ export interface Student {
   createdAt: string;
 }
 
+export interface StudentRecord {
+  id: string;
+  studentId: string;
+  date: string;
+  amount: number;
+}
+
 export type ActionType = 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin';
 
 export interface StreetAction {

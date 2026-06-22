@@ -1,14 +1,18 @@
 import { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { format } from 'date-fns';
-import type { Student, Session } from '../types';
+import type { Student, Session, StudentRecord } from '../types';
 import { sessionPnl } from '../utils/sessionPnl';
+import { AllStudentsChart } from './AllStudentsChart';
 
 interface Props {
   students: Student[];
   sessions: Session[];
+  records: StudentRecord[];
   onAddStudent: (name: string) => void;
   onDeleteStudent: (id: string) => void;
+  onAddRecord: (studentId: string, date: string, amount: number) => void;
+  onDeleteRecord: (id: string) => void;
 }
 
 function bbSize(stake: string): number {
@@ -126,7 +130,7 @@ function StatBox({ label, value, color }: { label: string; value: string; color:
   );
 }
 
-export function StudentsTab({ students, sessions, onAddStudent, onDeleteStudent }: Props) {
+export function StudentsTab({ students, sessions, records, onAddStudent, onDeleteStudent, onAddRecord, onDeleteRecord }: Props) {
   const [newName, setNewName] = useState('');
   const [showAdd, setShowAdd] = useState(false);
 
@@ -139,7 +143,14 @@ export function StudentsTab({ students, sessions, onAddStudent, onDeleteStudent 
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
+      <AllStudentsChart
+        students={students}
+        records={records}
+        onAddRecord={onAddRecord}
+        onDeleteRecord={onDeleteRecord}
+      />
+
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-slate-300">生徒一覧</h2>
         <button onClick={() => setShowAdd(s => !s)}

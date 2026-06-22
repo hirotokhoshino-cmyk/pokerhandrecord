@@ -1,4 +1,4 @@
-import type { Session, Student } from '../types';
+import type { Session, Student, StudentRecord } from '../types';
 
 const KEY = 'poker_sessions';
 const STUDENTS_KEY = 'poker_students';
@@ -33,6 +33,22 @@ export function loadStudents(): Student[] {
 
 export function saveStudents(students: Student[]): void {
   localStorage.setItem(STUDENTS_KEY, JSON.stringify(students));
+}
+
+const RECORDS_KEY = 'poker_student_records';
+
+export function loadStudentRecords(): StudentRecord[] {
+  try {
+    const raw = localStorage.getItem(RECORDS_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+export function saveStudentRecords(records: StudentRecord[]): void {
+  localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
 }
 
 const PASSWORD_KEY = 'poker_students_password';
