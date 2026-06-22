@@ -6,7 +6,7 @@ const SCORES_KEY = 'school_scores';
 const SESSION_KEY = 'school_session';
 
 const DEFAULT_USERS: SchoolUser[] = [
-  { id: 'teacher-1', name: '先生', role: 'teacher', password: 'teacher123' },
+  { id: 'teacher-1', name: 'CGAteacher', role: 'teacher', password: 'cgafun123' },
   { id: 'student-1', name: '田中 太郎', role: 'student', password: 'student123' },
   { id: 'student-2', name: '佐藤 花子', role: 'student', password: 'student123' },
   { id: 'student-3', name: '鈴木 一郎', role: 'student', password: 'student123' },
