@@ -1,19 +1,29 @@
 import { useState } from 'react';
 import { useSessions } from './hooks/useSessions';
+import { useStudents } from './hooks/useStudents';
 import { StartSessionModal } from './components/StartSessionModal';
 import { ActiveSession } from './components/ActiveSession';
 import { DailyChart } from './components/DailyChart';
 import { SessionHistory } from './components/SessionHistory';
+import { StudentsTab } from './components/StudentsTab';
 
-type Tab = 'play' | 'stats' | 'history';
+type Tab = 'play' | 'stats' | 'history' | 'students';
+
+const TAB_LABELS: Record<Tab, string> = {
+  play: 'プレイ',
+  stats: '統計',
+  history: '履歴',
+  students: '生徒',
+};
 
 export default function App() {
   const { sessions, activeSession, startSession, endSession, addHand, deleteHand, deleteSession, updateStartTime } = useSessions();
+  const { students, addStudent, deleteStudent } = useStudents();
   const [showStart, setShowStart] = useState(false);
   const [tab, setTab] = useState<Tab>('play');
 
-  const handleStart = (stake: string, buyIn: number, location?: string, startTime?: string) => {
-    startSession(stake, buyIn, location, startTime);
+  const handleStart = (stake: string, buyIn: number, location?: string, startTime?: string, studentId?: string) => {
+    startSession(stake, buyIn, location, startTime, studentId);
     setShowStart(false);
   };
 
@@ -43,7 +53,7 @@ export default function App() {
 
       {/* Tabs */}
       <nav className="flex border-b border-slate-800 px-4">
-        {(['play', 'stats', 'history'] as Tab[]).map(t => (
+        {(['play', 'stats', 'history', 'students'] as Tab[]).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -53,7 +63,7 @@ export default function App() {
                 : 'border-transparent text-slate-500 hover:text-slate-300'
             }`}
           >
-            {t === 'play' ? 'プレイ' : t === 'stats' ? '統計' : '履歴'}
+            {TAB_LABELS[t]}
           </button>
         ))}
       </nav>
@@ -101,9 +111,18 @@ export default function App() {
             <SessionHistory sessions={sessions} onDelete={deleteSession} />
           </div>
         )}
+
+        {tab === 'students' && (
+          <StudentsTab
+            students={students}
+            sessions={sessions}
+            onAddStudent={addStudent}
+            onDeleteStudent={deleteStudent}
+          />
+        )}
       </main>
 
-      {showStart && <StartSessionModal onStart={handleStart} />}
+      {showStart && <StartSessionModal onStart={handleStart} students={students} />}
     </div>
   );
 }

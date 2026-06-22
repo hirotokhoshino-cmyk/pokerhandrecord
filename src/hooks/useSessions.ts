@@ -12,7 +12,7 @@ export function useSessions() {
     saveSessions(updated);
   }, []);
 
-  const startSession = useCallback((stake: string, buyIn: number, location?: string, startTime?: string) => {
+  const startSession = useCallback((stake: string, buyIn: number, location?: string, startTime?: string, studentId?: string) => {
     const now = startTime ?? new Date().toISOString();
     const session: Session = {
       id: uuid(),
@@ -23,6 +23,7 @@ export function useSessions() {
       buyIn,
       currentStack: buyIn,
       hands: [],
+      studentId,
     };
     persist([...sessions, session]);
     return session.id;

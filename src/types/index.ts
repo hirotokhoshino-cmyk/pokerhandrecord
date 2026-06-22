@@ -1,3 +1,9 @@
+export interface Student {
+  id: string;
+  name: string;
+  createdAt: string;
+}
+
 export type ActionType = 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin';
 
 export interface StreetAction {
@@ -40,4 +46,5 @@ export interface Session {
   buyIn: number;
   currentStack: number; // tracks running stack in $
   hands: HandEntry[];
+  studentId?: string;
 }
