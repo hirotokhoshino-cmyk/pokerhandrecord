@@ -47,16 +47,16 @@ export function saveScores(scores: StudentScore[]): void {
   localStorage.setItem(SCORES_KEY, JSON.stringify(scores));
 }
 
-export function addScore(studentId: string, date: string, bustOuts: number, points: number, notes?: string): StudentScore {
+export function addScore(studentId: string, date: string, bustOuts: number, points: number, balance: number, notes?: string): StudentScore {
   const scores = getScores();
-  const entry: StudentScore = { id: uuidv4(), studentId, date, bustOuts, points, notes };
+  const entry: StudentScore = { id: uuidv4(), studentId, date, bustOuts, points, balance, notes };
   scores.push(entry);
   saveScores(scores);
   return entry;
 }
 
-export function updateScore(id: string, date: string, bustOuts: number, points: number, notes?: string): void {
-  saveScores(getScores().map(s => s.id === id ? { ...s, date, bustOuts, points, notes } : s));
+export function updateScore(id: string, date: string, bustOuts: number, points: number, balance: number, notes?: string): void {
+  saveScores(getScores().map(s => s.id === id ? { ...s, date, bustOuts, points, balance, notes } : s));
 }
 
 export function deleteScore(id: string): void {

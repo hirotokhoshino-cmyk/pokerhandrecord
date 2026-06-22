@@ -21,11 +21,11 @@ function useSchoolData() {
 
   return {
     user, setUser, users, scores,
-    handleAddScore: useCallback((studentId: string, date: string, bustOuts: number, points: number, notes?: string) => {
-      addScore(studentId, date, bustOuts, points, notes); refresh();
+    handleAddScore: useCallback((studentId: string, date: string, bustOuts: number, points: number, balance: number, notes?: string) => {
+      addScore(studentId, date, bustOuts, points, balance, notes); refresh();
     }, [refresh]),
-    handleUpdateScore: useCallback((id: string, date: string, bustOuts: number, points: number, notes?: string) => {
-      updateScore(id, date, bustOuts, points, notes); refresh();
+    handleUpdateScore: useCallback((id: string, date: string, bustOuts: number, points: number, balance: number, notes?: string) => {
+      updateScore(id, date, bustOuts, points, balance, notes); refresh();
     }, [refresh]),
     handleDeleteScore: useCallback((id: string) => { deleteScore(id); refresh(); }, [refresh]),
     handleAddStudent: useCallback((name: string, password: string) => { addStudent(name, password); refresh(); }, [refresh]),

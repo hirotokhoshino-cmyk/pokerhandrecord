@@ -4,7 +4,7 @@ import type { StudentScore } from '../types';
 interface Props {
   studentId: string;
   editTarget?: StudentScore;
-  onSave: (date: string, bustOuts: number, points: number, notes?: string) => void;
+  onSave: (date: string, bustOuts: number, points: number, balance: number, notes?: string) => void;
   onCancel: () => void;
 }
 
@@ -13,17 +13,18 @@ export function ScoreForm({ editTarget, onSave, onCancel }: Props) {
   const [date, setDate] = useState(editTarget?.date ?? today);
   const [bustOuts, setBustOuts] = useState(String(editTarget?.bustOuts ?? 0));
   const [points, setPoints] = useState(String(editTarget?.points ?? 0));
+  const [balance, setBalance] = useState(String(editTarget?.balance ?? 0));
   const [notes, setNotes] = useState(editTarget?.notes ?? '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(date, Number(bustOuts), Number(points), notes || undefined);
+    onSave(date, Number(bustOuts), Number(points), Number(balance), notes || undefined);
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 bg-[#1a1d27] rounded-xl p-4 border border-slate-700">
-      <div className="flex gap-3">
-        <div className="flex flex-col gap-1 flex-1">
+      <div className="flex gap-3 flex-wrap">
+        <div className="flex flex-col gap-1 flex-1 min-w-28">
           <label className="text-xs text-slate-400">日付</label>
           <input
             type="date"
@@ -33,7 +34,7 @@ export function ScoreForm({ editTarget, onSave, onCancel }: Props) {
             required
           />
         </div>
-        <div className="flex flex-col gap-1 w-24">
+        <div className="flex flex-col gap-1 w-20">
           <label className="text-xs text-slate-400">アウト数</label>
           <input
             type="number"
@@ -44,12 +45,22 @@ export function ScoreForm({ editTarget, onSave, onCancel }: Props) {
             required
           />
         </div>
-        <div className="flex flex-col gap-1 w-28">
+        <div className="flex flex-col gap-1 w-24">
           <label className="text-xs text-slate-400">ポイント</label>
           <input
             type="number"
             value={points}
             onChange={e => setPoints(e.target.value)}
+            className="bg-[#0f1117] border border-slate-700 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none focus:border-emerald-500"
+            required
+          />
+        </div>
+        <div className="flex flex-col gap-1 w-28">
+          <label className="text-xs text-slate-400">収支（円）</label>
+          <input
+            type="number"
+            value={balance}
+            onChange={e => setBalance(e.target.value)}
             className="bg-[#0f1117] border border-slate-700 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none focus:border-emerald-500"
             required
           />

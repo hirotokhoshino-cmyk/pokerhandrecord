@@ -9,9 +9,13 @@ interface Props {
 }
 
 export function ScoreChart({ scores, studentName }: Props) {
+  // Sort chronologically, take last 5 sessions
   const sorted = [...scores].sort((a, b) => a.date.localeCompare(b.date));
-  const data = sorted.map(s => ({
-    date: s.date.slice(5), // MM-DD
+  const recent = sorted.slice(-5);
+  const startIndex = sorted.length - recent.length + 1;
+
+  const data = recent.map((s, i) => ({
+    session: `第${startIndex + i}回`,
     ポイント: s.points,
     アウト数: s.bustOuts,
   }));
@@ -26,11 +30,14 @@ export function ScoreChart({ scores, studentName }: Props) {
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-sm text-slate-400 font-medium">{studentName} の成績推移</p>
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-slate-400 font-medium">{studentName} の成績推移</p>
+        <p className="text-xs text-slate-600">直近{data.length}セッション</p>
+      </div>
       <ResponsiveContainer width="100%" height={220}>
         <LineChart data={data} margin={{ top: 8, right: 12, left: -10, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#1e2230" />
-          <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
+          <XAxis dataKey="session" tick={{ fill: '#64748b', fontSize: 11 }} />
           <YAxis tick={{ fill: '#64748b', fontSize: 11 }} />
           <Tooltip
             contentStyle={{ background: '#1a1d27', border: '1px solid #334155', borderRadius: 8 }}
