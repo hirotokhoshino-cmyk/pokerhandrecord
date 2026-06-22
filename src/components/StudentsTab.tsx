@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { format } from 'date-fns';
 import type { Student, Session } from '../types';
+import { sessionPnl } from '../utils/sessionPnl';
 
 interface Props {
   students: Student[];
@@ -20,7 +21,7 @@ function studentStats(student: Student, sessions: Session[]) {
   const studentSessions = sessions.filter(s => s.studentId === student.id && s.endTime);
   if (studentSessions.length === 0) return null;
 
-  const totalPnl = studentSessions.reduce((acc, s) => acc + s.hands.reduce((a, h) => a + h.amount, 0), 0);
+  const totalPnl = studentSessions.reduce((acc, s) => acc + sessionPnl(s), 0);
   const totalHours = studentSessions.reduce((acc, s) => {
     return acc + (new Date(s.endTime!).getTime() - new Date(s.startTime).getTime()) / 3_600_000;
   }, 0);
@@ -29,18 +30,17 @@ function studentStats(student: Student, sessions: Session[]) {
   // BB/100 win rate
   const totalBBWon = studentSessions.reduce((acc, s) => {
     const bb = bbSize(s.stake);
-    const pnl = s.hands.reduce((a, h) => a + h.amount, 0);
-    return acc + pnl / bb;
+    return acc + sessionPnl(s) / bb;
   }, 0);
   const bb100 = totalHands > 0 ? (totalBBWon / totalHands) * 100 : 0;
 
-  const winSessions = studentSessions.filter(s => s.hands.reduce((a, h) => a + h.amount, 0) > 0).length;
+  const winSessions = studentSessions.filter(s => sessionPnl(s) > 0).length;
 
   // Cumulative curve
   const sorted = [...studentSessions].sort((a, b) => a.date.localeCompare(b.date));
   let cum = 0;
   const cumData = sorted.map(s => {
-    cum += s.hands.reduce((a, h) => a + h.amount, 0);
+    cum += sessionPnl(s);
     return { date: format(new Date(s.date), 'M/d'), cum };
   });
 

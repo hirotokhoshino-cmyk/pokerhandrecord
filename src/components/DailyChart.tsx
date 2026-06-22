@@ -4,6 +4,7 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import type { Session } from '../types';
+import { sessionPnl } from '../utils/sessionPnl';
 
 interface Props {
   sessions: Session[];
@@ -16,8 +17,7 @@ export function DailyChart({ sessions: allSessions }: Props) {
   // Daily totals
   const dailyMap: Record<string, number> = {};
   for (const s of sessions) {
-    const pnl = s.hands.reduce((acc, h) => acc + h.amount, 0);
-    dailyMap[s.date] = (dailyMap[s.date] ?? 0) + pnl;
+    dailyMap[s.date] = (dailyMap[s.date] ?? 0) + sessionPnl(s);
   }
   const sortedDates = Object.keys(dailyMap).sort();
   const dailyData = sortedDates.map(d => ({
@@ -33,7 +33,7 @@ export function DailyChart({ sessions: allSessions }: Props) {
   });
 
   // All-time stats
-  const allPnl = sessions.map(s => s.hands.reduce((a, h) => a + h.amount, 0));
+  const allPnl = sessions.map(s => sessionPnl(s));
   const totalPnl = allPnl.reduce((a, b) => a + b, 0);
   const wins = allPnl.filter(p => p > 0).length;
   const totalHours = sessions.reduce((acc, s) => {

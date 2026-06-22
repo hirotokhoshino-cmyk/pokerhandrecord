@@ -34,3 +34,17 @@ export function loadStudents(): Student[] {
 export function saveStudents(students: Student[]): void {
   localStorage.setItem(STUDENTS_KEY, JSON.stringify(students));
 }
+
+const PASSWORD_KEY = 'poker_students_password';
+
+export function loadStudentPassword(): string | null {
+  return localStorage.getItem(PASSWORD_KEY);
+}
+
+export function saveStudentPassword(pw: string): void {
+  localStorage.setItem(PASSWORD_KEY, pw);
+}
+
+export function clearStudentPassword(): void {
+  localStorage.removeItem(PASSWORD_KEY);
+}

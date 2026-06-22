@@ -47,4 +47,5 @@ export interface Session {
   currentStack: number; // tracks running stack in $
   hands: HandEntry[];
   studentId?: string;
+  finalStack?: number;
 }

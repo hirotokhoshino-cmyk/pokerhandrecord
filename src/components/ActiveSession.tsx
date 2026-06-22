@@ -8,7 +8,7 @@ interface Props {
   session: Session;
   onAddHand: (amount: number, note?: string, history?: HandHistory) => void;
   onDeleteHand: (handId: string) => void;
-  onEnd: () => void;
+  onEnd: (finalStack?: number) => void;
   onUpdateStartTime: (iso: string) => void;
 }
 
@@ -23,9 +23,11 @@ function bbFromStake(stake: string): number {
 }
 
 export function ActiveSession({ session, onAddHand, onDeleteHand, onEnd, onUpdateStartTime }: Props) {
-  const [now,         setNow]         = useState(new Date());
-  const [editingTime, setEditingTime] = useState(false);
-  const [timeInput,   setTimeInput]   = useState(format(new Date(session.startTime), 'HH:mm'));
+  const [now,           setNow]           = useState(new Date());
+  const [editingTime,   setEditingTime]   = useState(false);
+  const [timeInput,     setTimeInput]     = useState(format(new Date(session.startTime), 'HH:mm'));
+  const [showEndModal,  setShowEndModal]  = useState(false);
+  const [finalStackStr, setFinalStackStr] = useState(String(session.currentStack));
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -132,10 +134,67 @@ export function ActiveSession({ session, onAddHand, onDeleteHand, onEnd, onUpdat
       )}
 
       {/* End */}
-      <button onClick={onEnd}
+      <button onClick={() => { setFinalStackStr(String(session.currentStack)); setShowEndModal(true); }}
         className="w-full py-3 bg-slate-700 hover:bg-red-900 border border-slate-600 hover:border-red-700 text-slate-300 hover:text-red-300 font-semibold rounded-xl transition-colors">
         セッション終了
       </button>
+
+      {/* End session modal */}
+      {showEndModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-sm border border-slate-600 shadow-2xl">
+            <h2 className="text-lg font-bold text-white mb-1">セッション終了</h2>
+            <p className="text-sm text-slate-400 mb-5">残りスタックを入力すると成績が自動計算されます</p>
+
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="text-sm text-slate-400 mb-1 block">残りスタック ($)</label>
+                <input
+                  type="number"
+                  value={finalStackStr}
+                  onChange={e => setFinalStackStr(e.target.value)}
+                  min={0}
+                  autoFocus
+                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-emerald-500 font-mono text-lg"
+                />
+                {(() => {
+                  const fs = parseFloat(finalStackStr);
+                  if (!isNaN(fs)) {
+                    const pnl = fs - session.buyIn;
+                    return (
+                      <p className={`text-sm font-mono mt-1.5 ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        収支: {pnl >= 0 ? '+' : ''}${pnl.toLocaleString()}
+                      </p>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+
+              <div className="flex gap-3">
+                <button onClick={() => setShowEndModal(false)}
+                  className="flex-1 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl font-semibold transition-colors">
+                  キャンセル
+                </button>
+                <button
+                  onClick={() => {
+                    const fs = parseFloat(finalStackStr);
+                    onEnd(isNaN(fs) ? undefined : fs);
+                    setShowEndModal(false);
+                  }}
+                  className="flex-1 py-2.5 bg-red-700 hover:bg-red-600 text-white rounded-xl font-semibold transition-colors">
+                  終了する
+                </button>
+              </div>
+
+              <button onClick={() => { onEnd(undefined); setShowEndModal(false); }}
+                className="text-xs text-slate-500 hover:text-slate-400 text-center transition-colors">
+                スタック入力なしで終了
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

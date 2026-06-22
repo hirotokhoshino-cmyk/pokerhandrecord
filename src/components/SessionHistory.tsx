@@ -3,6 +3,7 @@ import { format, differenceInMinutes } from 'date-fns';
 import type { Session } from '../types';
 import { SessionChart } from './SessionChart';
 import { HandHistoryView } from './HandHistoryView';
+import { sessionPnl } from '../utils/sessionPnl';
 
 interface Props {
   sessions: Session[];
@@ -28,7 +29,7 @@ export function SessionHistory({ sessions, onDelete }: Props) {
   return (
     <div className="flex flex-col gap-3">
       {completed.map(s => {
-        const pnl = s.hands.reduce((acc, h) => acc + h.amount, 0);
+        const pnl = sessionPnl(s);
         const mins = differenceInMinutes(new Date(s.endTime!), new Date(s.startTime));
         const hours = Math.floor(mins / 60);
         const m = mins % 60;
@@ -62,7 +63,10 @@ export function SessionHistory({ sessions, onDelete }: Props) {
               <div className="px-4 pb-4 flex flex-col gap-3 border-t border-slate-700">
                 <div className="grid grid-cols-3 gap-2 pt-3">
                   <MiniStat label="バイイン" value={`$${s.buyIn.toLocaleString()}`} />
-                  <MiniStat label="時給" value={`${fmt(hourly)}/h`} color={hourly >= 0 ? 'text-emerald-400' : 'text-red-400'} />
+                  {s.finalStack !== undefined
+                    ? <MiniStat label="残りスタック" value={`$${s.finalStack.toLocaleString()}`} />
+                    : <MiniStat label="時給" value={`${fmt(hourly)}/h`} color={hourly >= 0 ? 'text-emerald-400' : 'text-red-400'} />
+                  }
                   <MiniStat label="ハンド数" value={`${s.hands.length}手`} />
                 </div>
 

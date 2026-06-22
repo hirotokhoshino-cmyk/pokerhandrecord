@@ -29,9 +29,11 @@ export function useSessions() {
     return session.id;
   }, [sessions, persist]);
 
-  const endSession = useCallback((sessionId: string) => {
+  const endSession = useCallback((sessionId: string, finalStack?: number) => {
     persist(sessions.map(s =>
-      s.id === sessionId ? { ...s, endTime: new Date().toISOString() } : s
+      s.id === sessionId
+        ? { ...s, endTime: new Date().toISOString(), ...(finalStack !== undefined ? { finalStack } : {}) }
+        : s
     ));
   }, [sessions, persist]);
 

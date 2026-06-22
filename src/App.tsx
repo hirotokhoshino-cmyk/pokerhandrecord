@@ -6,6 +6,7 @@ import { ActiveSession } from './components/ActiveSession';
 import { DailyChart } from './components/DailyChart';
 import { SessionHistory } from './components/SessionHistory';
 import { StudentsTab } from './components/StudentsTab';
+import { StudentsPasswordGate } from './components/StudentsPasswordGate';
 
 type Tab = 'play' | 'stats' | 'history' | 'students';
 
@@ -21,10 +22,16 @@ export default function App() {
   const { students, addStudent, deleteStudent } = useStudents();
   const [showStart, setShowStart] = useState(false);
   const [tab, setTab] = useState<Tab>('play');
+  const [studentsUnlocked, setStudentsUnlocked] = useState(false);
 
   const handleStart = (stake: string, buyIn: number, location?: string, startTime?: string, studentId?: string) => {
     startSession(stake, buyIn, location, startTime, studentId);
     setShowStart(false);
+  };
+
+  const handleTabChange = (t: Tab) => {
+    if (t !== 'students') setStudentsUnlocked(false);
+    setTab(t);
   };
 
   return (
@@ -56,7 +63,7 @@ export default function App() {
         {(['play', 'stats', 'history', 'students'] as Tab[]).map(t => (
           <button
             key={t}
-            onClick={() => setTab(t)}
+            onClick={() => handleTabChange(t)}
             className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
               tab === t
                 ? 'border-emerald-500 text-emerald-400'
@@ -77,7 +84,7 @@ export default function App() {
                 session={activeSession}
                 onAddHand={(amount, note, history) => addHand(activeSession.id, amount, note, history)}
                 onDeleteHand={handId => deleteHand(activeSession.id, handId)}
-                onEnd={() => endSession(activeSession.id)}
+                onEnd={(finalStack) => endSession(activeSession.id, finalStack)}
                 onUpdateStartTime={t => updateStartTime(activeSession.id, t)}
               />
             ) : (
@@ -113,12 +120,14 @@ export default function App() {
         )}
 
         {tab === 'students' && (
-          <StudentsTab
-            students={students}
-            sessions={sessions}
-            onAddStudent={addStudent}
-            onDeleteStudent={deleteStudent}
-          />
+          studentsUnlocked
+            ? <StudentsTab
+                students={students}
+                sessions={sessions}
+                onAddStudent={addStudent}
+                onDeleteStudent={deleteStudent}
+              />
+            : <StudentsPasswordGate onUnlocked={() => setStudentsUnlocked(true)} />
         )}
       </main>
 
