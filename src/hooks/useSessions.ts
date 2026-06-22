@@ -80,6 +80,7 @@ export function useSessions() {
 
   return {
     sessions,
+    setSessions,
     activeSession,
     startSession,
     endSession,

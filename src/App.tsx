@@ -7,19 +7,23 @@ import { DailyChart } from './components/DailyChart';
 import { SessionHistory } from './components/SessionHistory';
 import { StudentsTab } from './components/StudentsTab';
 import { StudentsPasswordGate } from './components/StudentsPasswordGate';
+import { SettingsTab } from './components/SettingsTab';
+import { saveSessions } from './store/storage';
+import { saveStudents } from './store/storage';
 
-type Tab = 'play' | 'stats' | 'history' | 'students';
+type Tab = 'play' | 'stats' | 'history' | 'students' | 'settings';
 
 const TAB_LABELS: Record<Tab, string> = {
   play: 'プレイ',
   stats: '統計',
   history: '履歴',
   students: '生徒',
+  settings: '設定',
 };
 
 export default function App() {
-  const { sessions, activeSession, startSession, endSession, addHand, deleteHand, deleteSession, updateStartTime } = useSessions();
-  const { students, addStudent, deleteStudent } = useStudents();
+  const { sessions, setSessions, activeSession, startSession, endSession, addHand, deleteHand, deleteSession, updateStartTime } = useSessions();
+  const { students, setStudents, addStudent, deleteStudent } = useStudents();
   const [showStart, setShowStart] = useState(false);
   const [tab, setTab] = useState<Tab>('play');
   const [studentsUnlocked, setStudentsUnlocked] = useState(false);
@@ -32,6 +36,23 @@ export default function App() {
   const handleTabChange = (t: Tab) => {
     if (t !== 'students') setStudentsUnlocked(false);
     setTab(t);
+  };
+
+  const handleClearSessions = () => {
+    setSessions([]);
+    saveSessions([]);
+  };
+
+  const handleClearStudents = () => {
+    setStudents([]);
+    saveStudents([]);
+  };
+
+  const handleClearAll = () => {
+    setSessions([]);
+    saveSessions([]);
+    setStudents([]);
+    saveStudents([]);
   };
 
   return (
@@ -59,12 +80,12 @@ export default function App() {
       </header>
 
       {/* Tabs */}
-      <nav className="flex border-b border-slate-800 px-4">
-        {(['play', 'stats', 'history', 'students'] as Tab[]).map(t => (
+      <nav className="flex border-b border-slate-800 px-2 overflow-x-auto">
+        {(['play', 'stats', 'history', 'students', 'settings'] as Tab[]).map(t => (
           <button
             key={t}
             onClick={() => handleTabChange(t)}
-            className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            className={`px-3 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px whitespace-nowrap ${
               tab === t
                 ? 'border-emerald-500 text-emerald-400'
                 : 'border-transparent text-slate-500 hover:text-slate-300'
@@ -128,6 +149,14 @@ export default function App() {
                 onDeleteStudent={deleteStudent}
               />
             : <StudentsPasswordGate onUnlocked={() => setStudentsUnlocked(true)} />
+        )}
+
+        {tab === 'settings' && (
+          <SettingsTab
+            onClearSessions={handleClearSessions}
+            onClearStudents={handleClearStudents}
+            onClearAll={handleClearAll}
+          />
         )}
       </main>
 

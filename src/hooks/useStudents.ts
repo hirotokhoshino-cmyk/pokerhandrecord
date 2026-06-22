@@ -21,5 +21,5 @@ export function useStudents() {
     persist(students.filter(s => s.id !== id));
   }, [students, persist]);
 
-  return { students, addStudent, deleteStudent };
+  return { students, setStudents, addStudent, deleteStudent };
 }
